@@ -1,8 +1,19 @@
 {
     "cSpell.words": [
+        "contenttypes",
+        "djangorestframework",
+        "gunicorn",
         "mypy",
+        "pathlib",
+        "psycopg",
         "pycache",
         "pyproject",
-        "sdist"
-    ]
+        "sdist",
+        "staticfiles",
+        "uvicorn"
+    ],
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "python.formatting.provider": "none"
 }
