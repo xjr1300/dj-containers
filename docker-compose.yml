@@ -29,8 +29,8 @@ services:
   db:
     # コンテナ名
     container_name: postgres-db
-    # コンテナイメージを指定(postgres16-postgis34)
-    image: postgres16-postgis34:16
+    # コンテナイメージを指定
+    image: xjr1300/postgres16-postgis34:latest
     # ポート番号を設定
     ports:
       - 5432:5432

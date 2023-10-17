@@ -469,8 +469,8 @@ docker-compose up -d
 +  db:
 +    # コンテナ名
 +    container_name: postgres-db
-+    # コンテナイメージを指定(postgres16-postgis34)
-+    image: postgres16-postgis34:16
++    # コンテナイメージを指定
++    image: xjr1300/postgres16-postgis34:latest
 +    # ポート番号を設定
 +    ports:
 +      - 5432:5432
@@ -495,7 +495,9 @@ docker-compose up -d
 +  postgres-db-data:
 ```
 
-> `postgres16-postgis34:16`イメージは、`Docker Hub`で公開されている[`postgis/postgis`](https://registry.hub.docker.com/r/postgis/postgis/)イメージです。
+> `xjr1300/postgres16-postgis34:16`イメージは、`Docker Hub`で公開されている[`postgis/postgis`](https://registry.hub.docker.com/r/postgis/postgis/)の`Docker`ファイルを編集して、`adminpack`エクステンションを追加して、ビルドしています。
+>
+> [参考] `containers/postgres`ディレクトリ
 
 ### `PostgreSQL`コンテナの起動確認
 
@@ -508,4 +510,4 @@ docker exec -i -t <postgres-container-id> /bin/bash
 psql -U <postgres-user> -c '\dt'
 ```
 
-上記を実行して、`django`のデフォルトテーブルが表示されることを確認します。
+上記を実行して、`django`のデフォルトテーブルが表示されていれば、`PostgreSQL`コンテナが正常に作成され、`Django`開発用アプリケーションコンテナからデータベースにアクセスできています。
