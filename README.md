@@ -137,9 +137,9 @@ DJANGO_SECRET_KEY=<django-secret-key>
 ├── .env
 ├── .gitignore
 ├── README.md
-├── my_site
+├── <django-project-name>
 │   ├── manage.py
-│   └── my_site
+│   └── <django-project-name>
 │       ├── __init__.py
 │       ├── asgi.py
 │       ├── settings.py
@@ -182,13 +182,13 @@ git mv <django-project-name>/manage.py .
 
  [...]
 
--ROOT_URLCONF = 'my_site.urls'
-+ROOT_URLCONF = 'my_site.my_site.urls'
+-ROOT_URLCONF = '<django-project-name>.urls'
++ROOT_URLCONF = '<django-project-name>.<django-project-name>.urls'
 
  [...]
 
--WSGI_APPLICATION = 'my_site.wsgi.application'
-+WSGI_APPLICATION = 'my_site.my_site.wsgi.application'
+-WSGI_APPLICATION = '<django-project-name>.wsgi.application'
++WSGI_APPLICATION = '<django-project-name>.<django-project-name>.wsgi.application'
 ```
 
 ### `WSGI`設定ファイルの編集
@@ -199,8 +199,8 @@ git mv <django-project-name>/manage.py .
 
  from django.core.wsgi import get_wsgi_application
 
--os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'my_site.settings')
-+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'my_site.my_site.settings')
+-os.environ.setdefault('DJANGO_SETTINGS_MODULE', '<django-project-name>.settings')
++os.environ.setdefault('DJANGO_SETTINGS_MODULE', '<django-project-name>.<django-project-name>.settings')
 
  application = get_wsgi_application()
 ```
@@ -213,8 +213,8 @@ git mv <django-project-name>/manage.py .
 
  from django.core.asgi import get_asgi_application
 
--os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'my_site.settings')
-+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'my_site.my_site.settings')
+-os.environ.setdefault('DJANGO_SETTINGS_MODULE', '<django-project-name>.settings')
++os.environ.setdefault('DJANGO_SETTINGS_MODULE', '<django-project-name>.<django-project-name>.settings')
 
  application = get_asgi_application()
 ```
@@ -226,10 +226,9 @@ git mv <django-project-name>/manage.py .
 ├── .env
 ├── .gitignore
 ├── README.md
-├── db.sqlite3
 ├── manage.py
-├── my_site
-│   └── my_site
+├── <django-project-name>
+│   └── <django-project-name>
 │       ├── __init__.py
 │       ├── asgi.py
 │       ├── settings.py
@@ -255,10 +254,13 @@ poetry run python manage.py runserver 0.0.0.0:8000
 
 ```text
 # Path: .dockerignore
+.devcontainer/
 .mypy_cache/
+.ruff_cache/
 .venv/
 __pycache__/
 assets/
+.dockerignore
 ```
 
 ### Django開発用コンテナ起動スクリプトの作成
@@ -395,12 +397,11 @@ docker-compose up -d
 ├── containers
 │   └── django
 │       └── Dockerfile
-├── db.sqlite3
 ├── docker-compose.yml
 ├── entrypoint.sh
 ├── manage.py
-├── my_site
-│   └── my_site
+├── <django-project-name>
+│   └── <django-project-name>
 │       ├── __init__.py
 │       ├── asgi.py
 │       ├── settings.py
@@ -524,3 +525,159 @@ psql -U <postgres-user> -c '\dt'
 ```
 
 上記を実行して、`django`のデフォルトテーブルが表示されていれば、`PostgreSQL`コンテナが正常に作成され、`Django`開発用アプリケーションコンテナからデータベースにアクセスできています。
+
+## リンター、フォーマッター及び静的型チェッカーの設定
+
+リンター、フォーマッター及び静的型チェッカーには次のパッケージを使用します。
+
+* `isort`: インポートの整理
+* `black`、`ruff`: リンター及びフォーマッター
+* `mypy`: 静的型チェッカー
+* `django-stubs`: `mypy`が使用する`django`用の型ヒント
+* `pre-commit`: `git commit`の前に、リンター、フォーマッター及び静的型チェッカーなどを実行する設定を追加
+
+### リンター、フォーマッター及び静的型チェッカーのインストール
+
+```sh
+poetry add isort black ruff mypy django-stubs pre-commit
+```
+
+### リンター、フォーマッター及び静的型チェッカーの設定
+
+```yaml
+# Path: pyproject.toml
+ [...]
+
+ [tool.poetry.dependencies]
+ python = "^3.11"
+ django = "^4.2.6"
+ psycopg = "^3.1.12"
+ djangorestframework = "^3.14.0"
+ gunicorn = "^21.2.0"
+ uvicorn = "^0.23.2"
+ python-dotenv = "^1.0.0"
++isort = "^5.12.0"
++ruff = "^0.1.0"
++pre-commit = "^3.5.0"
++black = "^23.9.1"
++mypy = "^1.6.0"
++django-stubs = "^4.2.4"
+
+ [build-system]
+ requires = ["poetry-core"]
+ build-backend = "poetry.core.masonry.api"
++
++[tool.isort]
++py_version = 311
++profile = "black"
++line_length = 120
++
++[tool.black]
++target-version = ["py311"]
++line-length = 120
++
++[tool.ruff]
++target-version = "py311"
++line-length = 120
++select = ["ALL"]
++ignore = [
++    "D104", # Missing docstring in public package
++    "D203", # 1 blank line required before class docstring
++    "D212", # Multi-line docstring summary should start at the first line
++]
++
++[tool.mypy]
++python_version = "3.11"
++plugins = ["mypy_django_plugin.main"]
++
++[tool.django-stubs]
++django_settings_module = "<django-project-name>.<django-project-name>.settings"
+```
+
+```Makefile
+lint:
+    poetry run isort <django-project-name> --check-only
+    poetry run black <django-project-name> --check
+    poetry run ruff <django-project-name>
+fmt:
+    poetry run isort <django-project-name>
+    poetry run black <django-project-name>
+    poetry run ruff <django-project-name> --fix
+types:
+    poetry run mypy <django-project-name>
+```
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-added-large-files
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.1.0
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix, <django-project-name>]
+```
+
+次の通り、コミット前の`git hook`スクリプトをインストールします。
+
+```sh
+poetry run pre-commit install
+```
+
+### リンター、フォーマッター及び静的型チェッカーの実行
+
+```sh
+# リンターの実行
+make lint
+# リンター及びフォーマッターの実行
+make fmt
+# 静的型チェッカーの実行
+make types
+```
+
+### [参考] 現在のディレクトリ構成
+
+```text
+.
+├── .dockerignore
+├── .env
+├── .gitignore
+├── .pre-commit-config.yaml
+├── Makefile
+├── README.md
+├── containers
+│   ├── django
+│   │   └── Dockerfile
+│   └── postgis
+│       ├── Dockerfile
+│       ├── initdb-postgis.sh
+│       └── update-postgis.sh
+├── docker-compose.yml
+├── entrypoint.sh
+├── manage.py
+├── <django-project-name>
+│   └── <django-project-name>
+│       ├── __init__.py
+│       ├── asgi.py
+│       ├── settings.py
+│       ├── urls.py
+│       └── wsgi.py
+├── poetry.lock
+└── pyproject.toml
+```
+
+### `Docker`コンテナの再ビルド
+
+リンター、フォーマッター及び静的型チェッカーをインストールしたり、ソースコードを整形したりしたため、`Docker`コンテナを再ビルドします。
+
+```sh
+docker-compose build
+docker-compose up -d
+```
