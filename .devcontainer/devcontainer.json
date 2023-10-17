@@ -50,7 +50,8 @@
 				"foxundermoon.shell-format",
 				"gruntfuggly.todo-tree",
 				"redhat.vscode-yaml",
-				"dotjoshjohnson.xml"
+				"dotjoshjohnson.xml",
+				"batisteo.vscode-django"
 			],
 			"settings": {
 				"cSpell.ignorePaths": [
