@@ -721,8 +721,8 @@ python manage.py 0.0.0.0:8080
 
 ここで、次に注意してください。
 
-- `8000`番ポートは、`Django`開発用コンテナで使用しているため、`8080`番ポートを使用しています。
-- `Django`開発用コンテナでは仮想環境を作成せずに、`Python`本体にパッケージを導入しているため、`poetry run python ...`のように実行できません。
+* `8000`番ポートは、`Django`開発用コンテナで使用しているため、`8080`番ポートを使用しています。
+* `Django`開発用コンテナでは仮想環境を作成せずに、`Python`本体にパッケージを導入しているため、`poetry run python ...`のように実行できません。
 
 ### [参考] 現在のディレクトリ構成
 
@@ -757,6 +757,7 @@ python manage.py 0.0.0.0:8080
 ├── poetry.lock
 └── pyproject.toml
 ```
+
 ## `Django`アプリケーションの開発
 
 `Django`アプリケーションは、`vscode`の`Dev Containers`を利用して開いた`Django`開発用コンテナの`workspace`ディレクトリで開発します。
@@ -765,7 +766,7 @@ python manage.py 0.0.0.0:8080
 
 ```sh
 git config --global user.name "<family-name given-name>"
-git coofig --global user.email <foo@example.com>
+git config --global user.email <foo@example.com>
 git config --global pager.branch false
 ```
 
