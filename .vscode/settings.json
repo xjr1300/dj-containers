@@ -1,4 +1,7 @@
 {
+    "cSpell.ignorePaths": [
+        ".devcontainer/**"
+    ],
     "cSpell.words": [
         "autoclean",
         "autoremove",
@@ -42,5 +45,4 @@
     "[python]": {
         "editor.defaultFormatter": "ms-python.python"
     },
-    "python.formatting.provider": "none"
 }
