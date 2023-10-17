@@ -396,3 +396,116 @@ docker-compose up -d
 ├── poetry.lock
 └── pyproject.toml
 ```
+
+## `PostgreSQL`コンテナのビルドと起動
+
+### 開発用環境変数ファイルの作成
+
+```.env
+# Path: .env
+ DEBUG=True
+
+ DJANGO_SECRET_KEY=<django secret key>
+
++POSTGRES_USER=<postgres-user>
++POSTGRES_PASSWORD=<postgres-user-password>
++POSTGRES_DB=<database-name>
++POSTGRES_HOST=postgres-db
++POSTGRES_PORT=5432
++PGPASSWORD="${POSTGRES_PASSWORD}"
+```
+
+> `POSTGRES_HOST`変数には、`docker-compose.yml`で後で定義する`PostgreSQL`コンテナのコンテナ名を指定しています。
+>
+> [`PGPASSWORD`](https://www.postgresql.org/docs/current/libpq-envars.html)変数は、後で定義する`PostgreSQL`コンテナの起動チェックで`psql`コマンドを実行する際に、この変数の値をパスワードとして使用するために設定しています。
+
+### `Django`プロジェクトのデータベース設定
+
+```python
+# Path: <django-project-name>/<django-project-name>.settings.py
+ [...]
+ INSTALLED_APPS = [
+     'django.contrib.admin',
+     'django.contrib.auth',
+     'django.contrib.contenttypes',
+     'django.contrib.sessions',
+     'django.contrib.messages',
+     'django.contrib.staticfiles',
++    'django.contrib.gis',
+ ]
+
+ [...]
+
+ DATABASES = {
+     'default': {
+-        'ENGINE': 'django.db.backends.sqlite3',
+-        'NAME': BASE_DIR / 'db.sqlite3',
++        'ENGINE': 'django.contrib.gis.db.backends.postgis',
++        'NAME': os.environ["POSTGRES_DB"],
++        'USER': os.environ["POSTGRES_USER"],
++        'PASSWORD': os.environ["POSTGRES_PASSWORD"],
++        'HOST': os.environ["POSTGRES_HOST"],
++        'PORT': os.environ["POSTGRES_PORT"],
+     }
+ }
+
+ [...]
+```
+
+### `PostgreSQL`コンテナの定義
+
+```yaml
+ services:
+   app:
+     [...]
+     # コンテナ起動時に実行するコマンドを設定
+     entrypoint: /project/entrypoint.sh
++   # コンテナ間の依存関係を設定
++   depends_on:
++     # dbコンテナが起動してからappコンテナを起動
++     db:
++       condition: service_healthy
++
++  db:
++    # コンテナ名
++    container_name: postgres-db
++    # コンテナイメージを指定(postgres16-postgis34)
++    image: postgres16-postgis34:16
++    # ポート番号を設定
++    ports:
++      - 5432:5432
++    # ボリュームを永続化
++    volumes:
++      - postgres-db-data:/var/lib/postgresql/data
++    # 環境変数ファイルを指定
++    env_file:
++      - .env
++    # ヘルスチェック
++    healthcheck:
++      # コンテナ内で実行するコマンド
++      test: psql -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c '\q'
++      # ヘルスチェックの間隔
++      interval: 10s
++      # ヘルスチェックのタイムアウト
++      timeout: 5s
++      # ヘルスチェックのリトライ回数
++      retries: 5
++
++volumes:
++  postgres-db-data:
+```
+
+> `postgres16-postgis34:16`イメージは、`Docker Hub`で公開されている[`postgis/postgis`](https://registry.hub.docker.com/r/postgis/postgis/)イメージです。
+
+### `PostgreSQL`コンテナの起動確認
+
+```sh
+# コンテナを起動
+docker-compose up -d
+# PostgreSQLコンテナのシェルに接続
+docker exec -i -t <postgres-container-id> /bin/bash
+# データベースのテーブルを表示
+psql -U <postgres-user> -c '\dt'
+```
+
+上記を実行して、`django`のデフォルトテーブルが表示されることを確認します。

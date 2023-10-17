@@ -6,6 +6,7 @@
         "contenttypes",
         "djangorestframework",
         "gunicorn",
+        "healthcheck",
         "libgdal",
         "libgeos",
         "libproj",
@@ -13,6 +14,9 @@
         "mypy",
         "noinput",
         "pathlib",
+        "PGPASSWORD",
+        "postgis",
+        "psql",
         "psycopg",
         "pycache",
         "pypi",
@@ -29,7 +33,7 @@
         "WORKDIR"
     ],
     "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
+        "editor.defaultFormatter": "ms-python.python"
     },
     "python.formatting.provider": "none"
 }
