@@ -371,3 +371,28 @@ docker-compose up -d
 ### Django開発用アプリケーションコンテナの起動確認
 
 ブラウザで`http://localhost:8000`にアクセスして、`Django`のインストール画面が**日本語**で表示されれば、正常に`Django`プロジェクトは適切に設定されています。
+
+### [参考] 現在のディレクトリ構成
+
+```text
+├── .dockerignore
+├── .env
+├── .gitignore
+├── README.md
+├── containers
+│   └── django
+│       └── Dockerfile
+├── db.sqlite3
+├── docker-compose.yml
+├── entrypoint.sh
+├── manage.py
+├── my_site
+│   └── my_site
+│       ├── __init__.py
+│       ├── asgi.py
+│       ├── settings.py
+│       ├── urls.py
+│       └── wsgi.py
+├── poetry.lock
+└── pyproject.toml
+```
