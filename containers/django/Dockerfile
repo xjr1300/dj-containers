@@ -9,6 +9,7 @@ RUN apt-get install -y --no-install-recommends \
     wget \
     locales \
     tzdata \
+    openssh-client \
     ca-certificates \
     gcc \
     build-essential \
