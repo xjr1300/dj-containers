@@ -327,10 +327,10 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 ENV PYTHONDONTWRITEBYTECODE=1
 # 標準出力と標準エラー出力ストリームをバッファしないように強制
 ENV PYTHONUNBUFFERED=1
-# コンテナのワークディレクトリを/projectに指定
-WORKDIR /project
-# ローカルのプロジェクトディレクトリの内容を、コンテナの/projectディレクトリの配下に配置
-COPY . /project/
+# コンテナのワークディレクトリを/workspaceに指定
+WORKDIR /workspace
+# ローカルのプロジェクトディレクトリの内容を、コンテナの/workspaceディレクトリの配下に配置
+COPY . /workspace/
 RUN pip install --upgrade pip && pip install poetry
 # poetryが仮想環境を作成しないように設定
 RUN poetry config virtualenvs.create false
@@ -361,9 +361,9 @@ services:
     build:
       context: .
       dockerfile: containers/django/Dockerfile
-    # ローカルのカレントディレクトリを、コンテナの/projectにマウント
+    # ローカルのカレントディレクトリを、コンテナの/workspaceにマウント
     volumes:
-      - .:/project
+      - .:/workspace
     # ローカルの8000ポートを、コンテナの8000ポートにマッピング
     ports:
       - 8000:8000
@@ -371,7 +371,7 @@ services:
     env_file:
       - .env
     # コンテナ起動時に実行するコマンドを設定
-    entrypoint: /project/entrypoint.sh
+    entrypoint: /workspace/entrypoint.sh
 ```
 
 ### Django開発用コンテナイメージのビルドと起動
@@ -473,7 +473,7 @@ docker-compose up -d
    app:
      [...]
      # コンテナ起動時に実行するコマンドを設定
-     entrypoint: /project/entrypoint.sh
+     entrypoint: /workspace/entrypoint.sh
 +   # コンテナ間の依存関係を設定
 +   depends_on:
 +     # dbコンテナが起動してからappコンテナを起動
@@ -680,4 +680,83 @@ make types
 ```sh
 docker-compose build
 docker-compose up -d
+```
+
+## コンテナ開発環境の構築
+
+`vscode`の拡張機能`Dev Containers`を使用して、先に作成した`Django`開発用コンテナで開発する環境を構築します。
+
+### `Dev Containers`のインストール
+
+`vscode`の拡張機能`Dev Containers`をインストールしてください。
+
+### `Dev Containers`の設定
+
+1. コマンドパレットを開いて(`Command + Shirt + P`)、`Dev Containers - Reopen in Container`を選択します。
+2. 次に`From 'docker-compose.yml'`を選択します。
+3. 次に`app`を選択します。
+4. 次に`Select additional features to install`で次を選択します。
+   1. `Python`
+   2. `isort`
+   3. `Black`
+   4. `Ruff`
+   5. `Mypy`
+5. 最後に`Keep Defaults`を選択します。
+
+しばらくすると`dj-containers`プロジェクトを開いている`vscode`が閉じられて、`Django`開発用コンテナにアタッチした`vscode`が開きます。
+開いた`vscode`で次を実行します。
+
+1. `Open Workspaces...`をクリックします。
+2. `Open Folder`で、`/workspace`を指定して`OK`をクリックします。
+
+これで、`Django`開発用コンテナにある本プロジェクトを`vscode`で開くことができました。
+`Django`開発用コンテナで実行した内容は、ローカルの本プロジェクトのディレクトリに反映されます。
+
+`vscode`のターミナルで次を実行して、ローカルのブラウザで`http://localhost:8080`にアクセスすると、`django`のインストール成功画面が表示されます。
+
+```sh
+python manage.py 0.0.0.0:8080
+```
+
+ここで、次に注意してください。
+
+- `8000`番ポートは、`Django`開発用コンテナで使用しているため、`8080`番ポートを使用しています。
+- `Django`開発用コンテナでは仮想環境を作成せずに、`Python`本体にパッケージを導入しているため、`poetry run python ...`のように実行できません。
+
+ソースコードの実装は、`Django`開発用コンテナで実施します。
+
+> ローカルで開発しようとすると、`GeoDjango`が要求する`gdal`がインストールされていないなど、エラーが発生する場合があります。
+
+### [参考] 現在のディレクトリ構成
+
+```text
+.
+├── .devcontainer
+│   ├── devcontainer.json
+│   └── docker-compose.yml
+├── .dockerignore
+├── .env
+├── .gitignore
+├── .pre-commit-config.yaml
+├── Makefile
+├── README.md
+├── containers
+│   ├── django
+│   │   └── Dockerfile
+│   └── postgis
+│       ├── Dockerfile
+│       ├── initdb-postgis.sh
+│       └── update-postgis.sh
+├── docker-compose.yml
+├── entrypoint.sh
+├── manage.py
+├── my_site
+│   └── my_site
+│       ├── __init__.py
+│       ├── asgi.py
+│       ├── settings.py
+│       ├── urls.py
+│       └── wsgi.py
+├── poetry.lock
+└── pyproject.toml
 ```
