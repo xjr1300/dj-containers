@@ -4,12 +4,14 @@
         "autoremove",
         "collectstatic",
         "contenttypes",
+        "devcontainers",
         "djangorestframework",
         "gunicorn",
         "healthcheck",
         "libgdal",
         "libgeos",
         "libproj",
+        "localtime",
         "makemigrations",
         "mypy",
         "noinput",
@@ -27,10 +29,12 @@
         "setdefault",
         "staticfiles",
         "subdir",
+        "tzdata",
         "URLCONF",
         "uvicorn",
         "virtualenvs",
-        "WORKDIR"
+        "WORKDIR",
+        "zoneinfo"
     ],
     "[python]": {
         "editor.defaultFormatter": "ms-python.python"
