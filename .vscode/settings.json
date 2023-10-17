@@ -9,7 +9,10 @@
         "pycache",
         "pyproject",
         "sdist",
+        "setdefault",
         "staticfiles",
+        "subdir",
+        "URLCONF",
         "uvicorn"
     ],
     "[python]": {
