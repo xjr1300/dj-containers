@@ -13,8 +13,39 @@ djangorestframework = "^3.14.0"
 gunicorn = "^21.2.0"
 uvicorn = "^0.23.2"
 python-dotenv = "^1.0.0"
-
+ruff = "^0.1.0"
+pre-commit = "^3.5.0"
+black = "^23.9.1"
+mypy = "^1.6.0"
+django-stubs = "^4.2.4"
+isort = "^5.12.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+py_version = 311
+profile = "black"
+line_length = 120
+
+[tool.black]
+target-version = ["py311"]
+line-length = 120
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+select = ["ALL"]
+ignore = [
+    "D104", # Missing docstring in public package
+    "D203", # 1 blank line required before class docstring
+    "D212", # Multi-line docstring summary should start at the first line
+]
+
+[tool.mypy]
+python_version = "3.11"
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "my_site.my_site.settings"

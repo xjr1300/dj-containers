@@ -1,4 +1,5 @@
 .mypy_cache/
+.ruff_cache/
 .venv/
 __pycache__/
 assets/
@@ -9,8 +10,8 @@ sdist/
 .DS_Store
 .cache
 .coverage
-db.sqlite3
 .env
+db.sqlite3
 *.log
 *.pot
 *.pyc

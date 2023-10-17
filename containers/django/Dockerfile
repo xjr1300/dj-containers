@@ -25,10 +25,10 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 ENV PYTHONDONTWRITEBYTECODE=1
 # 標準出力と標準エラー出力ストリームをバッファしないように強制
 ENV PYTHONUNBUFFERED=1
-# コンテナのワークディレクトリを/projectに指定
-WORKDIR /project
-# ローカルのプロジェクトディレクトリの内容を、コンテナの/projectディレクトリの配下に配置
-COPY . /project/
+# コンテナのワークディレクトリを/workspaceに指定
+WORKDIR /workspace
+# ローカルのプロジェクトディレクトリの内容を、コンテナの/workspaceディレクトリの配下に配置
+COPY . /workspace/
 RUN pip install --upgrade pip && pip install poetry
 # poetryが仮想環境を作成しないように設定
 RUN poetry config virtualenvs.create false

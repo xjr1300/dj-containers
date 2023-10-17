@@ -9,9 +9,9 @@ services:
     build:
       context: .
       dockerfile: containers/django/Dockerfile
-    # ローカルのカレントディレクトリを、コンテナの/projectにマウント
+    # ローカルのカレントディレクトリを、コンテナの/workspaceにマウント
     volumes:
-      - .:/project
+      - .:/workspace
     # ローカルの8000ポートを、コンテナの8000ポートにマッピング
     ports:
       - 8000:8000
@@ -19,7 +19,7 @@ services:
     env_file:
       - .env
     # コンテナ起動時に実行するコマンドを設定
-    entrypoint: /project/entrypoint.sh
+    entrypoint: /workspace/entrypoint.sh
     # コンテナ間の依存関係を設定
     depends_on:
       # dbコンテナを起動してからappコンテナを起動

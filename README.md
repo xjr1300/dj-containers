@@ -137,9 +137,9 @@ DJANGO_SECRET_KEY=<django-secret-key>
 ├── .env
 ├── .gitignore
 ├── README.md
-├── my_site
+├── <django-project-name>
 │   ├── manage.py
-│   └── my_site
+│   └── <django-project-name>
 │       ├── __init__.py
 │       ├── asgi.py
 │       ├── settings.py
@@ -182,13 +182,13 @@ git mv <django-project-name>/manage.py .
 
  [...]
 
--ROOT_URLCONF = 'my_site.urls'
-+ROOT_URLCONF = 'my_site.my_site.urls'
+-ROOT_URLCONF = '<django-project-name>.urls'
++ROOT_URLCONF = '<django-project-name>.<django-project-name>.urls'
 
  [...]
 
--WSGI_APPLICATION = 'my_site.wsgi.application'
-+WSGI_APPLICATION = 'my_site.my_site.wsgi.application'
+-WSGI_APPLICATION = '<django-project-name>.wsgi.application'
++WSGI_APPLICATION = '<django-project-name>.<django-project-name>.wsgi.application'
 ```
 
 ### `WSGI`設定ファイルの編集
@@ -199,8 +199,8 @@ git mv <django-project-name>/manage.py .
 
  from django.core.wsgi import get_wsgi_application
 
--os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'my_site.settings')
-+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'my_site.my_site.settings')
+-os.environ.setdefault('DJANGO_SETTINGS_MODULE', '<django-project-name>.settings')
++os.environ.setdefault('DJANGO_SETTINGS_MODULE', '<django-project-name>.<django-project-name>.settings')
 
  application = get_wsgi_application()
 ```
@@ -213,8 +213,8 @@ git mv <django-project-name>/manage.py .
 
  from django.core.asgi import get_asgi_application
 
--os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'my_site.settings')
-+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'my_site.my_site.settings')
+-os.environ.setdefault('DJANGO_SETTINGS_MODULE', '<django-project-name>.settings')
++os.environ.setdefault('DJANGO_SETTINGS_MODULE', '<django-project-name>.<django-project-name>.settings')
 
  application = get_asgi_application()
 ```
@@ -226,10 +226,9 @@ git mv <django-project-name>/manage.py .
 ├── .env
 ├── .gitignore
 ├── README.md
-├── db.sqlite3
 ├── manage.py
-├── my_site
-│   └── my_site
+├── <django-project-name>
+│   └── <django-project-name>
 │       ├── __init__.py
 │       ├── asgi.py
 │       ├── settings.py
@@ -255,10 +254,13 @@ poetry run python manage.py runserver 0.0.0.0:8000
 
 ```text
 # Path: .dockerignore
+.devcontainer/
 .mypy_cache/
+.ruff_cache/
 .venv/
 __pycache__/
 assets/
+.dockerignore
 ```
 
 ### Django開発用コンテナ起動スクリプトの作成
@@ -325,10 +327,10 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 ENV PYTHONDONTWRITEBYTECODE=1
 # 標準出力と標準エラー出力ストリームをバッファしないように強制
 ENV PYTHONUNBUFFERED=1
-# コンテナのワークディレクトリを/projectに指定
-WORKDIR /project
-# ローカルのプロジェクトディレクトリの内容を、コンテナの/projectディレクトリの配下に配置
-COPY . /project/
+# コンテナのワークディレクトリを/workspaceに指定
+WORKDIR /workspace
+# ローカルのプロジェクトディレクトリの内容を、コンテナの/workspaceディレクトリの配下に配置
+COPY . /workspace/
 RUN pip install --upgrade pip && pip install poetry
 # poetryが仮想環境を作成しないように設定
 RUN poetry config virtualenvs.create false
@@ -359,9 +361,9 @@ services:
     build:
       context: .
       dockerfile: containers/django/Dockerfile
-    # ローカルのカレントディレクトリを、コンテナの/projectにマウント
+    # ローカルのカレントディレクトリを、コンテナの/workspaceにマウント
     volumes:
-      - .:/project
+      - .:/workspace
     # ローカルの8000ポートを、コンテナの8000ポートにマッピング
     ports:
       - 8000:8000
@@ -369,7 +371,7 @@ services:
     env_file:
       - .env
     # コンテナ起動時に実行するコマンドを設定
-    entrypoint: /project/entrypoint.sh
+    entrypoint: /workspace/entrypoint.sh
 ```
 
 ### Django開発用コンテナイメージのビルドと起動
@@ -395,12 +397,11 @@ docker-compose up -d
 ├── containers
 │   └── django
 │       └── Dockerfile
-├── db.sqlite3
 ├── docker-compose.yml
 ├── entrypoint.sh
 ├── manage.py
-├── my_site
-│   └── my_site
+├── <django-project-name>
+│   └── <django-project-name>
 │       ├── __init__.py
 │       ├── asgi.py
 │       ├── settings.py
@@ -472,7 +473,7 @@ docker-compose up -d
    app:
      [...]
      # コンテナ起動時に実行するコマンドを設定
-     entrypoint: /project/entrypoint.sh
+     entrypoint: /workspace/entrypoint.sh
 +   # コンテナ間の依存関係を設定
 +   depends_on:
 +     # dbコンテナが起動してからappコンテナを起動
@@ -524,3 +525,238 @@ psql -U <postgres-user> -c '\dt'
 ```
 
 上記を実行して、`django`のデフォルトテーブルが表示されていれば、`PostgreSQL`コンテナが正常に作成され、`Django`開発用アプリケーションコンテナからデータベースにアクセスできています。
+
+## リンター、フォーマッター及び静的型チェッカーの設定
+
+リンター、フォーマッター及び静的型チェッカーには次のパッケージを使用します。
+
+* `isort`: インポートの整理
+* `black`、`ruff`: リンター及びフォーマッター
+* `mypy`: 静的型チェッカー
+* `django-stubs`: `mypy`が使用する`django`用の型ヒント
+* `pre-commit`: `git commit`の前に、リンター、フォーマッター及び静的型チェッカーなどを実行する設定を追加
+
+### リンター、フォーマッター及び静的型チェッカーのインストール
+
+```sh
+poetry add isort black ruff mypy django-stubs pre-commit
+```
+
+### リンター、フォーマッター及び静的型チェッカーの設定
+
+```yaml
+# Path: pyproject.toml
+ [...]
+
+ [tool.poetry.dependencies]
+ python = "^3.11"
+ django = "^4.2.6"
+ psycopg = "^3.1.12"
+ djangorestframework = "^3.14.0"
+ gunicorn = "^21.2.0"
+ uvicorn = "^0.23.2"
+ python-dotenv = "^1.0.0"
++isort = "^5.12.0"
++ruff = "^0.1.0"
++pre-commit = "^3.5.0"
++black = "^23.9.1"
++mypy = "^1.6.0"
++django-stubs = "^4.2.4"
+
+ [build-system]
+ requires = ["poetry-core"]
+ build-backend = "poetry.core.masonry.api"
++
++[tool.isort]
++py_version = 311
++profile = "black"
++line_length = 120
++
++[tool.black]
++target-version = ["py311"]
++line-length = 120
++
++[tool.ruff]
++target-version = "py311"
++line-length = 120
++select = ["ALL"]
++ignore = [
++    "D104", # Missing docstring in public package
++    "D203", # 1 blank line required before class docstring
++    "D212", # Multi-line docstring summary should start at the first line
++]
++
++[tool.mypy]
++python_version = "3.11"
++plugins = ["mypy_django_plugin.main"]
++
++[tool.django-stubs]
++django_settings_module = "<django-project-name>.<django-project-name>.settings"
+```
+
+```Makefile
+lint:
+    poetry run isort <django-project-name> --check-only
+    poetry run black <django-project-name> --check
+    poetry run ruff <django-project-name>
+fmt:
+    poetry run isort <django-project-name>
+    poetry run black <django-project-name>
+    poetry run ruff <django-project-name> --fix
+types:
+    poetry run mypy <django-project-name>
+```
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-added-large-files
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.1.0
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix, <django-project-name>]
+```
+
+次の通り、コミット前の`git hook`スクリプトをインストールします。
+
+```sh
+poetry run pre-commit install
+```
+
+### リンター、フォーマッター及び静的型チェッカーの実行
+
+```sh
+# リンターの実行
+make lint
+# リンター及びフォーマッターの実行
+make fmt
+# 静的型チェッカーの実行
+make types
+```
+
+### [参考] 現在のディレクトリ構成
+
+```text
+.
+├── .dockerignore
+├── .env
+├── .gitignore
+├── .pre-commit-config.yaml
+├── Makefile
+├── README.md
+├── containers
+│   ├── django
+│   │   └── Dockerfile
+│   └── postgis
+│       ├── Dockerfile
+│       ├── initdb-postgis.sh
+│       └── update-postgis.sh
+├── docker-compose.yml
+├── entrypoint.sh
+├── manage.py
+├── <django-project-name>
+│   └── <django-project-name>
+│       ├── __init__.py
+│       ├── asgi.py
+│       ├── settings.py
+│       ├── urls.py
+│       └── wsgi.py
+├── poetry.lock
+└── pyproject.toml
+```
+
+### `Docker`コンテナの再ビルド
+
+リンター、フォーマッター及び静的型チェッカーをインストールしたり、ソースコードを整形したりしたため、`Docker`コンテナを再ビルドします。
+
+```sh
+docker-compose build
+docker-compose up -d
+```
+
+## コンテナ開発環境の構築
+
+`vscode`の拡張機能`Dev Containers`を使用して、先に作成した`Django`開発用コンテナで開発する環境を構築します。
+
+### `Dev Containers`のインストール
+
+`vscode`の拡張機能`Dev Containers`をインストールしてください。
+
+### `Dev Containers`の設定
+
+1. コマンドパレットを開いて(`Command + Shirt + P`)、`Dev Containers - Reopen in Container`を選択します。
+2. 次に`From 'docker-compose.yml'`を選択します。
+3. 次に`app`を選択します。
+4. 次に`Select additional features to install`で次を選択します。
+   1. `Python`
+   2. `isort`
+   3. `Black`
+   4. `Ruff`
+   5. `Mypy`
+5. 最後に`Keep Defaults`を選択します。
+
+しばらくすると`dj-containers`プロジェクトを開いている`vscode`が閉じられて、`Django`開発用コンテナにアタッチした`vscode`が開きます。
+開いた`vscode`で次を実行します。
+
+1. `Open Workspaces...`をクリックします。
+2. `Open Folder`で、`/workspace`を指定して`OK`をクリックします。
+
+これで、`Django`開発用コンテナにある本プロジェクトを`vscode`で開くことができました。
+`Django`開発用コンテナで実行した内容は、ローカルの本プロジェクトのディレクトリに反映されます。
+
+`vscode`のターミナルで次を実行して、ローカルのブラウザで`http://localhost:8080`にアクセスすると、`django`のインストール成功画面が表示されます。
+
+```sh
+python manage.py 0.0.0.0:8080
+```
+
+ここで、次に注意してください。
+
+- `8000`番ポートは、`Django`開発用コンテナで使用しているため、`8080`番ポートを使用しています。
+- `Django`開発用コンテナでは仮想環境を作成せずに、`Python`本体にパッケージを導入しているため、`poetry run python ...`のように実行できません。
+
+ソースコードの実装は、`Django`開発用コンテナで実施します。
+
+> ローカルで開発しようとすると、`GeoDjango`が要求する`gdal`がインストールされていないなど、エラーが発生する場合があります。
+
+### [参考] 現在のディレクトリ構成
+
+```text
+.
+├── .devcontainer
+│   ├── devcontainer.json
+│   └── docker-compose.yml
+├── .dockerignore
+├── .env
+├── .gitignore
+├── .pre-commit-config.yaml
+├── Makefile
+├── README.md
+├── containers
+│   ├── django
+│   │   └── Dockerfile
+│   └── postgis
+│       ├── Dockerfile
+│       ├── initdb-postgis.sh
+│       └── update-postgis.sh
+├── docker-compose.yml
+├── entrypoint.sh
+├── manage.py
+├── my_site
+│   └── my_site
+│       ├── __init__.py
+│       ├── asgi.py
+│       ├── settings.py
+│       ├── urls.py
+│       └── wsgi.py
+├── poetry.lock
+└── pyproject.toml
+```
