@@ -41,6 +41,8 @@ db.sqlite3
 *.so
 ```
 
+> `django`の`collectstatic`コマンドで、`assets`ディレクトリに静的ファイルを収集するため、`assets`ディレクトリを追跡対象にしています。
+
 ### リポジトリの初期化
 
 ```sh
@@ -246,3 +248,126 @@ git mv <django-project-name>/manage.py .
 ```sh
 poetry run python manage.py runserver 0.0.0.0:8000
 ```
+
+## `Django`開発用コンテナのビルドと起動
+
+### `.dockerignore`ファイルの作成
+
+```text
+# Path: .dockerignore
+.mypy_cache/
+.venv/
+__pycache__/
+assets/
+```
+
+### Django開発用コンテナ起動スクリプトの作成
+
+次の`entrypoint.sh`ファイルを作成して、実行権限を付与します。
+
+```sh
+# Path: entrypoint.sh
+#!/usr/bin/env bash
+
+# データベースのマイグレーションを作成
+python manage.py makemigrations --noinput
+# データベースのマイグレーションを適用
+python manage.py migrate --noinput
+# 静的ファイルを収集
+python manage.py collectstatic --noinput
+# Djangoアプリ起動
+if [ $DEBUG = "True" ]; then
+    python manage.py runserver 0.0.0.0:8000
+else
+    # TODO: プロダクション環境の場合はuvicornを起動して、WebサーバーとDjangoアプリを連携
+    :
+fi
+```
+
+```sh
+chmod +x entrypoint.sh
+```
+
+### Django開発用コンテナイメージの定義
+
+```sh
+mkdir -p containers/django
+vi containers/django/Dockerfile
+```
+
+```dockerfile
+# Path: containers/django/Dockerfile
+# Pythonのイメージを指定
+FROM python:3.12-slim-bookworm
+# パッケージの更新及びインストール
+RUN apt-get update
+RUN apt-get install -y --no-install-recommends \
+    build-essential \
+    libgdal-dev \
+    libgeos-dev \
+    libproj-dev
+RUN apt-get -y clean && apt-get -y autoclean && apt-get -y autoremove
+RUN rm -rf /var/lib/apt/lists/*
+# モジュールインポート次に.pycファイルを作成しない
+ENV PYTHONDONTWRITEBYTECODE=1
+# 標準出力と標準エラー出力ストリームをバッファしないように強制
+ENV PYTHONUNBUFFERED=1
+# コンテナのワークディレクトリを/projectに指定
+WORKDIR /project
+# ローカルのプロジェクトディレクトリの内容を、コンテナの/projectディレクトリの配下に配置
+COPY . /project/
+RUN pip install --upgrade pip && pip install poetry
+# poetryが仮想環境を作成しないように設定
+RUN poetry config virtualenvs.create false
+# コンテナ側でパッケージをインストール
+RUN poetry install
+# コンテナのpipのキャッシュをクリア
+RUN pip cache purge
+# コンテナのpoetryのキャッシュをクリア
+RUN poetry cache clear pypi --all
+# entrypoint.shに実行権限を付与
+RUN chmod 755 entrypoint.sh
+```
+
+> `GeoDjango`を利用することを想定しているため、`libgdal-dev`、`libgeos-dev`、`libproj-dev`をインストールしています。
+
+### `docker-compose.yml`ファイルの作成
+
+```yaml
+# Path: docker-compose.yml
+version: "3.8"
+
+services:
+  app:
+    # コンテナ名
+    container_name: django-app
+    # ビルドコンテキストをカレントディレクトリに設定
+    # Dockerfileのパスを指定
+    build:
+      context: .
+      dockerfile: containers/django/Dockerfile
+    # ローカルのカレントディレクトリを、コンテナの/projectにマウント
+    volumes:
+      - .:/project
+    # ローカルの8000ポートを、コンテナの8000ポートにマッピング
+    ports:
+      - 8000:8000
+    # 環境変数ファイルを設定
+    env_file:
+      - .env
+    # コンテナ起動時に実行するコマンドを設定
+    entrypoint: /project/entrypoint.sh
+```
+
+### Django開発用コンテナイメージのビルドと起動
+
+```sh
+# コンテナのビルド
+docker-compose build
+# コンテナの起動
+docker-compose up -d
+```
+
+### Django開発用アプリケーションコンテナの起動確認
+
+ブラウザで`http://localhost:8000`にアクセスして、`Django`のインストール画面が**日本語**で表示されれば、正常に`Django`プロジェクトは適切に設定されています。

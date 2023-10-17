@@ -1,19 +1,32 @@
 {
     "cSpell.words": [
+        "autoclean",
+        "autoremove",
+        "collectstatic",
         "contenttypes",
         "djangorestframework",
         "gunicorn",
+        "libgdal",
+        "libgeos",
+        "libproj",
+        "makemigrations",
         "mypy",
+        "noinput",
         "pathlib",
         "psycopg",
         "pycache",
+        "pypi",
         "pyproject",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONUNBUFFERED",
         "sdist",
         "setdefault",
         "staticfiles",
         "subdir",
         "URLCONF",
-        "uvicorn"
+        "uvicorn",
+        "virtualenvs",
+        "WORKDIR"
     ],
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter"

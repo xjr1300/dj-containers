@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  app:
+    # コンテナ名
+    container_name: django-app
+    # ビルドコンテキストをカレントディレクトリに設定
+    # Dockerfileのパスを指定
+    build:
+      context: .
+      dockerfile: containers/django/Dockerfile
+    # ローカルのカレントディレクトリを、コンテナの/projectにマウント
+    volumes:
+      - .:/project
+    # ローカルの8000ポートを、コンテナの8000ポートにマッピング
+    ports:
+      - 8000:8000
+    # 環境変数ファイルを設定
+    env_file:
+      - .env
+    # コンテナ起動時に実行するコマンドを設定
+    entrypoint: /project/entrypoint.sh
