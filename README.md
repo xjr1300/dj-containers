@@ -760,7 +760,11 @@ python manage.py 0.0.0.0:8080
 
 ## `Django`アプリケーションの開発
 
+### 概要
+
 `Django`アプリケーションは、`vscode`の`Dev Containers`を利用して開いた`Django`開発用コンテナの`workspace`ディレクトリで開発します。
+
+### gitの設定
 
 実際に開発するためには、`git`を設定してから開発してください。
 
@@ -771,3 +775,51 @@ git config --global pager.branch false
 ```
 
 > ローカルで開発しようとすると、`GeoDjango`が要求する`gdal`がインストールされていないなど、エラーが発生する場合があります。
+
+### リンター、フォーマッター及び静的型チェッカーなどの設定
+
+実際に開発する上で、リンター、フォーマッター及び静的型チェッカーなどの設定では不十分です。
+開発を試行した結果、変更した設定があるため、次のファイルの内容を確認してください。
+
+* `pyproject.toml`
+* `.pre-commit-config.yaml`
+
+> `ruff`のルールを`pyproject.toml`と`.pre-commit-config.yaml`で設定しています。
+> これは、1つのファイルで設定する方法が不明なためです。
+
+### アプリの追加
+
+```sh
+python manage.py startapp <django-app-name>
+mv <django-app-name> <django-project-name>/.
+```
+
+```python
+# Path: <django-project-name>/<django-project-name>/settings.py
+ INSTALLED_APPS = [
+     "django.contrib.admin",
+     "django.contrib.auth",
+     "django.contrib.contenttypes",
+     "django.contrib.sessions",
+     "django.contrib.messages",
+     "django.contrib.staticfiles",
+     "django.contrib.gis",
++    "<django-project-name>.<django-app-name>.apps.PrefecturesConfig",
+ ]
+```
+
+```python
+# Path: <django-project-name>/<django-app-name>/apps.py
+from django.apps import AppConfig
+
+
+class PrefecturesConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "<django-project-name>.<django-app-name>"
+```
+
+### スーパーユーザーの作成
+
+```sh
+python manage.py createsuperuser
+```

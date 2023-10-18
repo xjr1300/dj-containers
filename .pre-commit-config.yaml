@@ -11,4 +11,18 @@ repos:
     rev: v0.1.0
     hooks:
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix, my_site]
+        args: [
+          --fix,
+          --ignore=D100,
+          --ignore=D101,
+          --ignore=D104,
+          --ignore=D105,
+          --ignore=D106,
+          --ignore=D203,
+          --ignore=D212,
+          --ignore=D400,
+          --ignore=D415,
+          --exit-non-zero-on-fix,
+          --exclude=migrations,
+          my_site
+        ]
