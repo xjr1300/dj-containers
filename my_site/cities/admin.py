@@ -5,11 +5,26 @@ from .models import City
 
 
 class CityAdmin(OSMGeoAdmin):
-    fields = ("code", "name", "geom")
-    list_display = ("code", "name")
-    ordering = ("code",)
+    fields = (
+        "code",
+        "pref_code",
+        "pref_name",
+        "name",
+        "geom",
+    )
+    list_display = (
+        "code",
+        "pref_code",
+        "pref_name",
+        "name",
+    )
+    ordering = (
+        "pref_code",
+        "code",
+    )
     search_fields = (
         "code",
+        "pref_name",
         "name",
     )
 

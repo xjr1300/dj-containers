@@ -7,6 +7,8 @@ class City(geo_models.Model):
     """市区町村モデル"""
 
     code = geo_models.CharField("市区町村コード", max_length=5, primary_key=True)
+    pref_code = geo_models.CharField("都道府県コード", max_length=2)
+    pref_name = geo_models.CharField("都道府県名", max_length=10)
     name = geo_models.CharField("市区町村名", max_length=20)
     geom = geo_models.MultiPolygonField("ジオメトリ", srid=4326)
 
