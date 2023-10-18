@@ -817,3 +817,9 @@ class PrefecturesConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "<django-project-name>.<django-app-name>"
 ```
+
+### スーパーユーザーの作成
+
+```sh
+python manage.py createsuperuser
+```
