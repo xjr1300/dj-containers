@@ -11,4 +11,10 @@ repos:
     rev: v0.1.0
     hooks:
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix, my_site]
+        args: [
+          --fix,
+          --ignore=D100,
+          --ignore=D101,
+          --exit-non-zero-on-fix,
+          my_site
+        ]
