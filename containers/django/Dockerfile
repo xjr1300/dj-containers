@@ -26,6 +26,8 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 ENV PYTHONDONTWRITEBYTECODE=1
 # 標準出力と標準エラー出力ストリームをバッファしないように強制
 ENV PYTHONUNBUFFERED=1
+# gitを設定
+RUN git config --global pager.branch false
 # コンテナのワークディレクトリを/workspaceに指定
 WORKDIR /workspace
 # ローカルのプロジェクトディレクトリの内容を、コンテナの/workspaceディレクトリの配下に配置
