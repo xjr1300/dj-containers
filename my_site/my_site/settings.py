@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.gis",
-    "my_site.prefectures.apps.PrefecturesConfig",
+    "my_site.cities.apps.CitiesConfig",
 ]
 
 MIDDLEWARE = [
