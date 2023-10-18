@@ -42,7 +42,6 @@ line-length = 120
 [tool.ruff]
 target-version = "py311"
 line-length = 120
-select = ["ALL"]
 ignore = [
     "D100", # Missing docstring in public module
     "D101", # Missing docstring in public class

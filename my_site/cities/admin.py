@@ -13,4 +13,5 @@ class CityAdmin(OSMGeoAdmin):
         "name",
     )
 
+
 admin.site.register(City, CityAdmin)
