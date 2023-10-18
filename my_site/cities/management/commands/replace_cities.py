@@ -19,6 +19,7 @@ class Command(BaseCommand):
     # シェイプファイルのフィールド
     FIELDS = [
         {"name": "city_code", "type": "C"},
+        {"name": "pref_code", "type": "C"},
         {"name": "pref_name", "type": "C"},
         {"name": "city_name", "type": "C"},
     ]
@@ -93,6 +94,8 @@ class Command(BaseCommand):
         geometry = MultiPolygon(polygons)
         city = City()
         city.code = feature.record["city_code"]
+        city.pref_code = feature.record["pref_code"]
+        city.pref_name = feature.record["pref_name"]
         city.name = feature.record["city_name"]
         city.geom = geometry
         return city
